@@ -62,7 +62,7 @@ y0：初始序列集
 本章介绍Levenshtein Transformer和双策略学习算法。整体来说就是针对一串序列，反复进行**插入**和**删除**来进行*调整*，直至收敛。细节会放在附录。
 
 ### 模型
-模型以Transformer为基础block。Block间的状态迁移如下
+模型以Transformer为基础。Block间的状态迁移如下，
 
 ![formula4](formula4.PNG)
 
@@ -82,3 +82,12 @@ decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三�
 3. Token分类器：针对所有的Placeholder辨别用哪个词汇去替换。
 
 ![](classfier3.PNG)
+
+- 共用Weight
+
+在Transformer的部分，上述三个策略decoder默认共用同一个。当然，也可以选择不共用，增加效用而不影响推演时间。
+
+- 提前退出
+
+权衡精确度和计算资源，可以让&pi;<sup>del</sup>和&pi;<sup>plh</sup>的分类器接在中间block上，不需要三个操作都走整个Transformer。不过&pi;<sup>tok</sup>仍旧接最后一个block，因为预测单词的难度更大。
+
