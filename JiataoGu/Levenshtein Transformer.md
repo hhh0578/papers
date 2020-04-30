@@ -91,3 +91,5 @@ decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三�
 
 权衡精确度和计算资源，可以让&pi;<sup>del</sup>和&pi;<sup>plh</sup>的分类器接在中间block上，不需要三个操作都走整个Transformer。不过&pi;<sup>tok</sup>仍旧接最后一个block，因为预测单词的难度更大。
 
+### 双策略学习
+
