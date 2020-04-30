@@ -14,7 +14,7 @@ Y：序列集
 A：操作集
 E：环境
 R：报酬
-y<sub>0</sub>：初始序列集
+y0：初始序列集
 ```
 
 机器人在环境E中，这个环境接受机器人的编辑操作，然后回馈一个调整后的序列。本文定义Y=V<sup>N<sub>max</sub></sup>。，N<sub>max</sub>代表最大长度，V是词汇记号。
@@ -59,3 +59,11 @@ y<sub>0</sub>：初始序列集
 
 ## Levenshtein Transformer
 
+本章介绍Levenshtein Transformer和双策略学习算法。整体来说就是针对一串序列，反复进行**插入**和**删除**来进行*调整*，直至收敛。细节会放在附录。
+
+### 模型
+模型以Transformer为基础block。Block间的状态迁移如下
+
+![formula4](formula4.PNG)
+
+其中E的次元为|V|xd<sub>model</sub>，P的次元为N<sub>max</sub>xd<sub>model</sub>。上面Figure1展示了一次优化的过程。
