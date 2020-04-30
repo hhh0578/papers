@@ -73,12 +73,12 @@ y0：初始序列集
 decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三个策略分类器：
 1. 删除分类器：针对所有token辨别是否需要删除，除了边界。
 
-![formula5](formula5.PNG)
+![](classfier1.PNG)
 
 2. Placeholder分类器：针对所有相邻的token辨别是否需要插入。
 
-![formula6](formula6.PNG)
+![](classfier2.PNG)
 
 3. Token分类器：针对所有的Placeholder辨别用哪个词汇去替换。
 
-![formula7](formula7.PNG)
+![](classfier3.PNG)
