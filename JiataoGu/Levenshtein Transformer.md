@@ -55,7 +55,7 @@ y<sub>0</sub>：初始序列集
 
 ![formula3](formula3.PNG)
 
-其中y&prime; 和y&Prime; 分别意味着E(y; ,d)和E(y&prime; ,p)
+其中y&prime; 和y&Prime; 分别意味着E(y,d)和E(y&prime; ,p)
 
 ## Levenshtein Transformer
 
