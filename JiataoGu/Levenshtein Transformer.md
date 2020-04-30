@@ -75,7 +75,7 @@ decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三�
 
 ![](classfier1.PNG)
 
-2. Placeholder分类器：针对所有相邻的token辨别是否需要插入。
+2. Placeholder分类器：针对所有相邻的token辨别需要插入几个词汇。
 
 ![](classfier2.PNG)
 
