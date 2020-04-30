@@ -51,7 +51,7 @@ y0：初始序列集
 
 ![formula2](formula2.PNG)
 
-一次循环的计算式为
+一次循环为
 
 ![formula3](formula3.PNG)
 
