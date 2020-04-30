@@ -45,4 +45,17 @@ y<sub>0</sub>：初始序列集
 
 - 策略组合
 
-要注意以上策略是互补的，因此在操作的时候可以同时进行。每次循环分三步走：`删除token-插入placeholder-替换placeholder`。严谨来说，就是
+要注意以上策略是互补的，因此在操作的时候可以同时进行。每次循环分三步走：`删除token-插入placeholder-替换placeholder`。严谨来说，就是已有序列![formula1](formula1.PNG)
+
+预测操作
+
+![formula2](formula2.PNG)
+
+一次循环的计算式为
+
+![formula3](formula3.PNG)
+
+其中y&prime; 和y&Prime; 分别意味着E(y; ,d)和E(y&prime; ,p)
+
+## Levenshtein Transformer
+
