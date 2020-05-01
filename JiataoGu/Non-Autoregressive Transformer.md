@@ -17,6 +17,24 @@
 
 #### RNN之外的递归NMT
 虽然预测时候必须递归进行，但训练时由于译文已知，就能够充分发挥这种优势。比如masked convolution layers。\
-而最近的一项研究是[Transformer][transformer]，
+而最近的一项研究是[Transformer][transformer]，这种方法将序列的顺序计算进一步削减，通过mask让decoder的attention计算次数无关句长，保持不变。
+
+### 非递归decoding
+#### 递归decoding的优缺点
+这种常规模型能够有效模拟人类词对词的翻译过程，在训练数据充足的情况下颇有成效，而且类似beam search的搜索策略能让结果更为优化。\
+然而这种方法在decoder必须顺序执行，阻止了Transformer等模型在预测时候能发挥出训练时候的水平。beam search也会因为beam size而导致计算量激增。
+
+#### 非递归decoding
+最单纯的解决办法就是切断递归顺序。假定有独立的条件分布P<sub>L</sub>能求出target序列的长度T，就有下式：\
+![Imgur](https://i.imgur.com/6birJyr.png)\
+上式保留了似然函数，依旧能用cross-entropy误差得到分布。而且能够并行预测每个单词。
+
+### 多峰问题(Multimodality Problem)
+然而这种简单办法成效并不可观，因为这导致条件完全独立。每个token的分布p(y<sub>t</sub>)仅仅取决于原句X，而译文是在时间维度上强相关的，这就导致无法准确预测出译文的分布。直观上说，这就像是要人根据一段原文，在不知道前面几个译文单词是什么的情况下推断出下一个单词。\
+比如英文“Thank you”可以翻译成法语“Danke”“Danke schon”和“Vielen Dank”，然而若是脱离了前后关系，就会出现不该出现的“Danke Dank”或“Vielen schon”。\
+这种独立条件假设无法预测多峰分布的译文。后面将描述如何调整模型，并提出一种训练技巧解决这个问题。
+
+## NAT（Non-Autoagressive Transformer）
+
 
 [transformer]:(https://arxiv.org/abs/1706.03762)
