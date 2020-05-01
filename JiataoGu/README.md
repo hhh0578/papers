@@ -39,7 +39,7 @@ y0：初始序列集
 - 插入
 
   插入操作要复杂一点，包含两个部分：**placeholder预测**和**token预测**，这意味着它能在一个位置插入好几个token。首先策略&pi;<sup>plh</sup>(p | i,**y**)在所有的位置(y<sub>i</sub>,y<sub>i+1</sub>)预测是否插入一个placeholder,再以策略&pi;<sup>tok</sup>(t | i,**y**)将placeholder用实际token替换。这一套结构中的各个分类器能分别用在3个task上。
-  > 这种两阶段插入操作也能有用在[Insertion Transformer](https://arxiv.org/abs/1902.03249)和[Masked language model](https://arxiv.org/abs/1810.04805)。
+  > 这种两阶段插入操作也能有用在[Insertion Transformer][insertiontransformer]和[Masked language model](https://arxiv.org/abs/1810.04805)。
 
 ![one refinement iteration](image.png)
 
@@ -70,12 +70,12 @@ y0：初始序列集
 
 - 策略分类器
 
-decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三个策略分类器：
-  1. 删除分类器：针对所有token辨别是否需要删除，除了边界。
+  decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三个策略分类器：
+1. 删除分类器：针对所有token辨别是否需要删除，除了边界。
   ![](classfier1.PNG)
-  2. Placeholder分类器：针对所有相邻的token辨别需要插入几个词汇。
+2. Placeholder分类器：针对所有相邻的token辨别需要插入几个词汇。
   ![](classfier2.PNG)
-  3. Token分类器：针对所有的Placeholder辨别用哪个词汇去替换。
+3. Token分类器：针对所有的Placeholder辨别用哪个词汇去替换。
   ![](classfier3.PNG)
 - 共用Weight
 
@@ -89,6 +89,53 @@ decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三�
 
 - 模仿学习
 
-  训练Levenshtein Transformer的时候用到模仿学习，让机器人学习专业策略&pi;<sup>\*<\sup>。专业策略由实际target或经过[sequence distillation](https://arxiv.org/abs/1606.07947)的低噪音处理结果生成。目标在于最大化以下期待值：
-  [Imgur](https://i.imgur.com/d0F5ub1.png)
+  训练Levenshtein Transformer的时候用到模仿学习，让机器人学习expert策略&pi;<sup>\*</sup>。expert策略由实际target或经过[sequence distillation](https://arxiv.org/abs/1606.07947)的低噪音处理结果生成。目标在于最大化以下期待值：
+  ![Imgur](https://i.imgur.com/d0F5ub1.png)
+  > y'<sub>ins</sub>：y<sub>ins</sub>插入P*的placeholder之后的结果。 \
+  > &pi;(上波浪)：代表roll-in策略，其中d是相应的状态分布。
   
+  首先通过expert策略得到参考操作，然后最大化条件log-likehood。roll-in策略决定了训练期间喂给&pi;<sub>&theta;</sub>的状态分布。roll-in分两个过程——给真实结果掺入噪音或使用对立策略给出的结果。图2展示了学习过程。
+  
+  ![Imgur](https://i.imgur.com/LXNtTXK.png)
+  
+  正式写法如下
+1. 学习如何删除\
+  利用混合参数随机选择原始输入y0和插入之后的输入。混合参数&alpha;&isin;\[0,1\],u代表平均分布，y'代表需要插入的序列，t由sampling生成。\
+  ![Imgur](https://i.imgur.com/N3dTlH4.png)
+  
+2. 学习如何插入\
+  与删除类似，利用混合参数随机选择删除后的结果或者真实结果中随机去除词汇后的序列，这种方法参考了[masked language model](https://arxiv.org/abs/1810.04805)。随机去除的过程作为一种噪声，能促进探索。混合参数&alpha;&isin;\[0,1\],u代表平均分布，y'代表需要插入的序列，t由sampling生成。\
+  ![Imgur](https://i.imgur.com/nuQ7stY.png)
+
+- expert策略
+
+  构造一个合适的expert策略很重要，效果不能太强或太弱。于是这里有两种方法
+  
+1. Oracle\
+  利用真实序列预测一个最优操作a\*（包括插入操作的p\*,t\*和删除操作的d\*）。其中D用了[Levenshtein distance](https://nymity.ch/sybilhunting/pdf/Levenshtein1966a.pdf)，因为这可以通过dynamic programming高效求解\
+  ![Imgur](https://i.imgur.com/hoAfDZv.png) 
+
+2. [Distillation](https://arxiv.org/abs/1606.07947)\
+  先利用同一个数据集训练一个auto-regressive教师模型，用beam-search得到的结果y<sup>AR</sup>替换掉truth序列y\*。这种方法广泛运用于[nonauto-regressive生成][nonregressive]的模型中。之后获取最优操作的方法和Oracle一样。
+  
+### 预测
+- Greedy Decoding \
+在LevT中，发现用search手法或[noisy parallel decodding](https://arxiv.org/abs/1605.03835)并不会有更大效果。原因估计有下列两点：
+  1. 在autoregressive model中，局部最优解和全局最优解有较大差距，search技巧利用表格化方法解决这个问题。然而本模型能动态地删除或插入token，可以直接重新插入更优解。
+  2. LevT的log概率不适合用来选取最佳输出。
+  
+- 边界条件\
+满足以下2个条件时，停止decoding。
+  1. Looping：当两次优化操作得到的结果相同时。1.没有任何删除添加操作，或者2.机器人陷入无限循环，如插入和删除操作无限来回切换。
+  2. Timeout：设置一个最大循环次数（timeout）以确保时间复杂度最差只会是常数级别。
+  
+- 对空placeholder的惩罚\
+参考[Stern et al.][insertiontransformer]的操作，在decoding过程中对placeholder实行惩罚。插入“空”placeholder会导致输出变短，于是设置一个惩罚项&gamma;&isin;[0,3]，从placeholder公式中结果为0的逻辑函数中减去。
+
+### 实验结果
+![Imgur](https://i.imgur.com/8zkiOzd.png)
+
+
+
+[nonregressive]:https://arxiv.org/abs/1711.02281
+[insertiontransformer]:https://arxiv.org/abs/1902.03249
