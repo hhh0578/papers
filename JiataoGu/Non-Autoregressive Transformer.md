@@ -102,5 +102,13 @@ Fertilities具有非递归翻译中所需要的潜在变量应有的性质：
 NPD是随机探索模型，计算量和采样size成线性关系。不过，采样和打分的计算完全独立，因此若是模型训练能并行化，计算速度只会比求一次译文的慢一倍。
 
 ## 训练
+NAT有潜在变量f，其后验概率为p(f|x,y;&theta;)，这里可以提供一个proposal分布q(f|x,y)，这就可以推导出一个变分下限：
+![Imgur](https://i.imgur.com/4mX26V3.png)\
+这个proposal分布q由另一个独立固定的fertility模型得到。比如external aligner，或是由一个固定的递归模型经过attention weights的计算得到的fertilities。这简化了预测步骤，因为q的期待值是固定的。\
+这个损失函数由两部分组成，这意味着可以视作两个有师学习模型，翻译模型p和fertility神经网络模型p<sub>F</sub>。
+
+### 序列知识提取
+
+
 
 [transformer]:(https://arxiv.org/abs/1706.03762)
