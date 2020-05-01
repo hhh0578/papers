@@ -90,5 +90,5 @@ decoder的输出(h<sub>0</sub>,h<sub>2</sub>,&hellip; ,h<sub>n</sub>)传入三�
 - 模仿学习
 
   训练Levenshtein Transformer的时候用到模仿学习，让机器人学习专业策略&pi;<sup>\*<\sup>。专业策略由实际target或经过[sequence distillation](https://arxiv.org/abs/1606.07947)的低噪音处理结果生成。目标在于最大化以下期待值：
-  ![](https://imgur.com/d0F5ub1)
+  [Imgur](https://i.imgur.com/d0F5ub1.png)
   
