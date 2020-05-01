@@ -13,7 +13,7 @@
 
 #### 最大似然训练 
 这种递归性质的输出让训练可以直接通过最大似然法进行，利用cross-entropy误差能直接对每一步的条件概率预测进行矫正。\
-![Imgur](https://i.imgur.com/ykhatGy.png)\
+![Imgur](https://i.imgur.com/ykhatGy.png)
 
 #### RNN之外的递归NMT
 虽然预测时候必须递归进行，但训练时由于译文已知，就能够充分发挥这种优势。比如masked convolution layers。\
@@ -73,6 +73,34 @@
 > ![Imgur](https://i.imgur.com/yv4csS4.png)
 
 #### Fertility Prediction
+如图2所示，fertility针对每个位置，在顶部用一个一层神经网络p<sub>f</sub>(f | x1:T’)作为分类器（本实验中L=50）。这种方式得到的值是汲取了整句话上下文信息之后的信息。
 
+#### Benefits of Fertility
+Fertilities具有非递归翻译中所需要的潜在变量应有的性质：
+
+  - 这个额外的aligner将无师学习问题化解为了两个有师学习。
+  - 用fertilities作为潜在变量通过分解output空间解决了多峰问题。给定一个原句，将输出分布限制在特定fertility序列下能有效限制mode的空间大小。换句话说，就是将全局的选择化作了局部的选择：即如何翻译每个输入单词。这种局部mode。这种由于fertilities提供了依据，这种局部mode能得到有效学习。
+  - 潜在变量中fertilities和reordering都可以提供完整的对齐数据。这能让decoding函数更方便计算，把模型的复杂部分都挪到encoder。单独使用fertilities又可以让decoder减少encoder的负担。
+
+利用fertilities当潜在变量也意味着不需要另外设计一个译文长度。而且提供了一种指导decoding的方法——采样fertility空间来生成多种翻译。
+
+### Translation Predictor及其Decoding Process
+预测时，该模型将所有fertility序列marginalizing，能够求出最高的条件概率（见公式5）。给定fertility序列，只需要独立的最大化每个位置的局部概率就能得到最优解。定义Y=G(x<sub>1:T’</sub>,f<sub>1:T’</sub>;&theta;)表示给定原句和fertility序列时的最优解。\
+然而要探索所有fertility空间不现实，因此提出3种启发式decoding算法以减少NAT模型中的搜索空间。
+#### Argmax decoding
+单纯取概率最大的fertility序列。\
+![Imgur](https://i.imgur.com/CVobRpB.png)
+
+#### Average decoding
+确定一个最大次数，取每个fertility的期待值。\
+![Imgur](https://i.imgur.com/KNvE5U6.png)
+
+#### Noisy Parallel Decoding(NPD)
+更准确的方法灵感来自于[Cho](https://arxiv.org/abs/1605.03835)。从fertility空间中采样，然后计算每个fertility序列下的最佳翻译。可以用autoregressive模型P<sub>AR</sub>得到一个best overall translation。\
+![Imgur](https://i.imgur.com/SoRR174.png)\
+注意，在用递归模型作为scoring函数计算翻译的时候，实装的训练过程越快越好，所有decoder都是能并行操作的。\
+NPD是随机探索模型，计算量和采样size成线性关系。不过，采样和打分的计算完全独立，因此若是模型训练能并行化，计算速度只会比求一次译文的慢一倍。
+
+## 训练
 
 [transformer]:(https://arxiv.org/abs/1706.03762)
