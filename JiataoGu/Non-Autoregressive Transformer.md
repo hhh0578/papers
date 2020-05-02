@@ -1,5 +1,5 @@
 # [NON-AUTOREGRESSIVE NEURAL MACHINE TRANSLATION](https://arxiv.org/abs/1711.02281)
-
+[源代码](https://github.com/salesforce/nonauto-nmt)
 ## 介绍
 现存的翻译模型都是利用已生成的序列计算新的单词，本文提供一种**非递归**方法避免这种**递归**性质，并行地生成结果，能大幅度减少预测时地时间成本。利用knowledge distillation（利用输入信息作为潜在变量）和policy gradient fine-tuning，可以达到与**递归Transformer**同等地效果。利用三步训练策略，能有效优化模型。
 
@@ -85,7 +85,7 @@ Fertilities具有非递归翻译中所需要的潜在变量应有的性质：
 利用fertilities当潜在变量也意味着不需要另外设计一个译文长度。而且提供了一种指导decoding的方法——采样fertility空间来生成多种翻译。
 
 ### Translation Predictor及其Decoding Process
-预测时，该模型将所有fertility序列marginalizing，能够求出最高的条件概率（见公式5）。给定fertility序列，只需要独立的最大化每个位置的局部概率就能得到最优解。定义Y=G(x<sub>1:T’</sub>,f<sub>1:T’</sub>;&theta;)表示给定原句和fertility序列时的最优解。\
+预测时，该模型将所有fertility序列marginalizing，能够求出最高的条件概率（见公式5）。给定fertility序列，只需要独立的最大化每个位置的局部概率就能得到最优解。**定义Y=G(x<sub>1:T’</sub>,f<sub>1:T’</sub>;&theta;)表示给定原句和fertility序列时的最优解**。\
 然而要探索所有fertility空间不现实，因此提出3种启发式decoding算法以减少NAT模型中的搜索空间。
 #### Argmax decoding
 单纯取概率最大的fertility序列。\
@@ -107,8 +107,19 @@ NAT有潜在变量f，其后验概率为p(f|x,y;&theta;)，这里可以提供一
 这个proposal分布q由另一个独立固定的fertility模型得到。比如external aligner，或是由一个固定的递归模型经过attention weights的计算得到的fertilities。这简化了预测步骤，因为q的期待值是固定的。\
 这个损失函数由两部分组成，这意味着可以视作两个有师学习模型，翻译模型p和fertility神经网络模型p<sub>F</sub>。
 
-### 序列知识提取
+### Sequence-level Knowledge Distillation（从原数据构建一个新的译文corpus）
+fertility模型还不能够完全解决问题，因此采用了[sequence-level knowledge distillation][distillation]训练一个autoregressive模型来构成一个新的corpus。用这个模型的output作为teacher来训练non-autoregressive模型。这样就能把一对多转变为一对一，将译文固定。不过质量要比原数据集差一点。
 
+### Fine-Tuning
+这个模型比较依赖external alignment system生成的预测结果。于是提出在训练NAT之后进行fine-tuning。于是给出一个由teacher output分布构成的reverse KL divergence，这是一种单词级别的knowledge distillation：\
+![Imgur](https://i.imgur.com/NcC6hju.png)\
+其中y_hat=G(x,f;&theta;)。这个误差比起普通的cross-entropy误差更偏好有peak的输出分布。\
+于是整个模型的误差如下，一项original distillation loss及两项L<sub>RKL</sub>，括号中前者是fertility正规化的期望值，后者是用external fertility的期望值。\
+![Imgur](https://i.imgur.com/cKLm52i.png)\
+其中f_fa参考公式7。L<sub>RL</sub>可以用强化学习计算，L<sub>BP</sub>可以普通地逆传播计算。
 
+## 实验
+### 实验设置
 
+[distillation]:(https://arxiv.org/abs/1606.07947)
 [transformer]:(https://arxiv.org/abs/1706.03762)
