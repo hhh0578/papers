@@ -145,8 +145,19 @@ Sequence-level knowledge distillation用于减轻训练集中的multimodality，
 ### 实验结果
 ![Imgur](https://i.imgur.com/ZzHZm5G.png)
 ### Ablation Study
+- 在decoder仅仅输入positional embedding会导致无法学习。
+- 用distillation corpus比用真实corpus要提升5 BLEU。
+- 用fertility复制原句比均一复制原句效果要好，在真实corpus中提升4 BLEU，在distillation中提升2 BLEU。
+- fine0-tuning中仅仅用RL或者BP都没有效果。三者都用可以提升1.5 BLEU。
+- 用distillation corpus训练的student模型用beam search的结果与用greedily-distilled corpus训练的结果类似。
 
+![Imgur](https://i.imgur.com/ZiomVYk.png)
+- 在BLEU类似的情况下，本模型可读性更强
 
+![Imgur](https://i.imgur.com/DT1ryvy.png)
+
+- 下图给出了不同fertility下的译文例。
+![Imgur](https://i.imgur.com/9PHFsWw.png)
 
 [bpe]:(https://arxiv.org/abs/1508.07909)
 [distillation]:(https://arxiv.org/abs/1606.07947)
