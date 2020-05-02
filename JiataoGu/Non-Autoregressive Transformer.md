@@ -113,13 +113,41 @@ fertility模型还不能够完全解决问题，因此采用了[sequence-level k
 ### Fine-Tuning
 这个模型比较依赖external alignment system生成的预测结果。于是提出在训练NAT之后进行fine-tuning。于是给出一个由teacher output分布构成的reverse KL divergence，这是一种单词级别的knowledge distillation：\
 ![Imgur](https://i.imgur.com/NcC6hju.png)\
-其中y_hat=G(x,f;&theta;)。这个误差比起普通的cross-entropy误差更偏好有peak的输出分布。\
+其中y_hat=G(x<sub>1:T’</sub>,f<sub>1:T’</sub>;&theta;)。这个误差比起普通的cross-entropy误差更偏好有peak的输出分布。\
 于是整个模型的误差如下，一项original distillation loss及两项L<sub>RKL</sub>，括号中前者是fertility正规化的期望值，后者是用external fertility的期望值。\
 ![Imgur](https://i.imgur.com/cKLm52i.png)\
-其中f_fa参考公式7。L<sub>RL</sub>可以用强化学习计算，L<sub>BP</sub>可以普通地逆传播计算。
+其中f_va参考公式7。L<sub>RL</sub>可以用强化学习计算，L<sub>BP</sub>可以普通地逆传播计算。
 
 ## 实验
 ### 实验设置
+#### 数据集
+- development dataset for ablation experiments:[IWSTL16 En-De](https://wit3.fbk.eu/)
+- train and test dataset:[WMT14 En–De](https://www.statmt.org/wmt14/translation-task.html)and [WMT16 En–Ro](http://www.statmt.org/wmt16/translation-task.html)
+- [Byte-Pair Encoding(BPE)][bpe]
+- WMT中，使用了分享出来的BPE词汇表，并且共用了encoder和decoder的word embeddings
+- IWSLT中，将分用了英语和德语的词汇表和embeddings。
 
+#### teacher
+Sequence-level knowledge distillation用于减轻训练集中的multimodality，其中用到了递归模型。而这个模型继续用于fine-tuning时的scoring和noisy parallel decoding。而这个递归模型用了state-of-the-art Transformer，并且保持了所有模型相应位置的参数一致。
+#### 训练过程
+- **训练所有teacher模型**
+  首先训练teacher模型，然后固定参数。并且用teacher模型为所有的训练集构造一个新的训练集。
+- **encoder参数初始化**
+  将NAT的encoder参数初始化，与teacher模型一致，这么做能提高效果。。
+- **利用fertility指导训练**
+  训练过程中需要一个fixed aligner来生成fertillity，用[IBM Model 2](https://www.aclweb.org/anthology/N13-1073/)中的[fast_align](https://github.com/clab/fast_align)达到这个目的。
+- **Hyperparameters**
+  与[Transformer][transformer]一致，但没有label smoothing。在IWSLT数据集中，(d<sub>model</sub>=287,d<sub>hidden</sub>,n<sub>layer</sub>=5,n<sub>head</sub>=2,t<sub>warmup</sub>=746)。在fine-tuning中，&lumbda;=0.25。
+- **评价方式**
+  BLEU
+- **实装**
+  [PyTorch代码](https://github.com/salesforce/nonauto-nmt)
+### 实验结果
+![Imgur](https://i.imgur.com/ZzHZm5G.png)
+### Ablation Study
+
+
+
+[bpe]:(https://arxiv.org/abs/1508.07909)
 [distillation]:(https://arxiv.org/abs/1606.07947)
 [transformer]:(https://arxiv.org/abs/1706.03762)
