@@ -1,4 +1,4 @@
-# Learning to Translate in Real-time with Neural Machine Translation
+# [Learning to Translate in Real-time with Neural Machine Translation](https://arxiv.org/abs/1610.00388)
 [源代码](https://github.com/nyu-dl/dl4mt-simul-trans)
 ## 关于同步翻译的先行研究
 - [用启发式decoder](https://arxiv.org/abs/1606.02012)
@@ -10,7 +10,37 @@
 ![Imgur](https://i.imgur.com/sGhahkH.png)
 ## 定义问题
 假定有输入X={x<sub>1</sub>,&hellip;x<sub.Ts</sub>},**READ**操作从input buffer按时间顺序读取原文，**WRITE**操作则翻译y到output buffer，得到译文Y={y<sub>1</sub>,&hellip;,y<sub>Tt</sub>}，并有一个操作序列A={a<sub>1</sub>,&hellip;,a<sub>T</sub>}.其中时间T=T<sub>s</sub>+T<sub>t</sub>。\
-评价标准：Q(Y)衡量翻译质量，如[BLEU][bleu]；D(A)评价时间延迟。
+评价标准：Q(Y)衡量翻译质量，如[BLEU](https://www.aclweb.org/anthology/P02-1040)；D(A)评价时间延迟。
+## 用NMT实现同步翻译
+框架如图2所示，分为**环境**和**机器人**两部分。\
+![Imgur](https://i.imgur.com/6sFvGPp.png)
+### 环境
+**Encoder：READ**
+encoder将输入X={x<sub>1</sub>,&hellip;x<sub.Ts</sub>}转化喂上下文向量H={h<sub>1</sub>,&hellip;h<sub.Ts</sub>}。通常NMT会用到**双向RNN**，不过不适合同步翻译，因此用单向RNN：\
+![Imgur](https://i.imgur.com/ZSIo9qi.png)\
+**Decoder：WRITE**
+参考MT实用attention-based decoder。不过，仅仅参考已经读取的input：\
+![Imgur](https://i.imgur.com/Nf9horI.png)\
+其中&tau;，z<sub>&tau;-1</sub>和y<sub>&tau;-1</sub>分别代表decoder的前一个状态和输出。H<sup>&eta;</sup>表示非完整的input states。\
+WRITE操作要计算下一个单词的概率，用greedy decoding：\
+![Imgur](https://i.imgur.com/SJyV7fg.png)\
+注意：y<sup>&eta;</sup><sub>&tau;</sub>和z<sup>&eta;</sup><sub>&tau;</sub>对应H<sup>&eta;</sup>，而且是y<sub>&tau;</sub>和z<sub>&tau;</sub>的candidate。而**机器人**将会决定是是否采用这个candidate。
+### 机器人
+训练后的**机器人**要能够在ovservation O={o<sub>1</sub>,&hellip;,o<sub>T</sub>},下做出一系列决定A={a<sub>1</sub>,&hellip;,a<sub>T</sub>，a<sub>t</sub>&isin;{WRITE,READ}，以此推进环境的变化。
+
+**Ovservation**
+如图2所示，组合**当前上下文向量**c<sup>&eta;</sup><sub>&tau;</sub>，**当前decoder状态**z<sup>&eta;</sup><sub>&tau;</sub>以及**候补单词**y<sup>&eta;</sup><sub>&tau;</sub>三项成为一个ovservation，即o<sub>&tau;+&eta;</sub>表示current state。\
+**Action**
+参考[Grissom的先行研究](https://www.aclweb.org/anthology/D14-1140/)，定义以下两个动作：
+
+- READ：机器人拒绝这个candidate，等待encoder从input buffer中读取下个单词。
+- WRITE：机器人接受这个candidate，并将这个预测输入output buffer。
+
+**Policy**
+如何从ovserbation中决定**操作**。本实验采用从RNN神经网络参数化的stochastic plicy &pi;<sub>&theta;</sub>：\
+![Imgur](https://i.imgur.com/Ioqrwin.png)\
+其中s<sub>t</sub>是机器人的**内在状态**，根据操作a<sub>t</sub>的分布导出。由这个机器人的policy可以得到算法1，输出结果是**译文**和一列observation-action pairs。\
+![Imgur](https://i.imgur.com/jYOyetG.png)
+## 学习
 
 
-[bleu]:(https://www.aclweb.org/anthology/P02-1040)
