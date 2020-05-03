@@ -17,7 +17,7 @@
 ### 环境
 - **Encoder：READ**
 encoder将输入X={x<sub>1</sub>,&hellip;x<sub.Ts</sub>}转化喂上下文向量H={h<sub>1</sub>,&hellip;h<sub.Ts</sub>}。通常NMT会用到**双向RNN**，不过不适合同步翻译，因此用单向RNN：\
-![Imgur](https://i.imgur.com/ZSIo9qi.png)\
+![Imgur](https://i.imgur.com/ZSIo9qi.png)
 - **Decoder：WRITE**
 参考MT实用attention-based decoder。不过，仅仅参考已经读取的input：\
 ![Imgur](https://i.imgur.com/Nf9horI.png)\
@@ -52,17 +52,29 @@ BLEU是对BLEU<sup>0</sup>添加了BP项以惩罚短句的结果。\
 ![Imgur](https://i.imgur.com/jX9FoZT.png)\
 Y<sup>\*</sup>代表**参考结果**，Y代表**输出**。
 
-  然而实际实验中光用BLEU效果不佳。于是在局部BLEU予以变化：\
+  然而实际实验中光用BLEU效果不佳。于是在局部BLEU予以变化，**质量**的报酬函数：\
 ![Imgur](https://i.imgur.com/Nw0uqOw.png)
   > ![Imgur](https://i.imgur.com/dWZx7nO.png)
 
   即在READ的时候报酬为0。
 
 - **Delay**
-为简单期间，每个单词的延迟时间认定为一致。
+为简单起见，每个单词的延迟时间认定为一致。
 
-- [Average Proportion（AP）](https://arxiv.org/abs/1606.02012)\
-  ![Imgur](https://i.imgur.com/4vVFgOt.png)
-  
-- Consecutive Wait length（CW）\
+  - [Average Proportion（AP）](https://arxiv.org/abs/1606.02012)\
+  ![Imgur](https://i.imgur.com/4vVFgOt.png)\
+  s(&tau;)表示输出单词y<sub>&tau;</sub>的时候读取的原文单词个数。该方法用来表示global delay。
+  - Consecutive Wait length（CW）\
+  ![Imgur](https://i.imgur.com/OZqmyFY.png)\
+  该方法用来表示local delay。
+  - Target Delay\
+  针对d和c，定义d<sup>\*</sup>和c<sup>\*</sup>表示**目标延迟**，因为不同场景可能需要的延迟标准不同。于是**延迟**的报酬函数写作如下：\
   ![Imgur](https://i.imgur.com/OZqmyFY.png)
+
+- 权衡**质量**和**延迟**
+同步翻译要求权衡这两项指标，显然这两项是一对此消彼长的矛盾关系。本文定义报酬：\
+![Imgur](https://i.imgur.com/9touHLs.png)\
+调整的参数为公式9中的相关系数&alpha;和&beta;，以及**目标延迟**d<sup>\*</sup>和c<sup>\*</sup>。
+### 强化学习
+- [Policy Gradient](https://link.springer.com/article/10.1007/BF00992696)\
+固定预训练好的NMT模型，用Policy gradient训练机器人。Policy gradient将未来的累计报酬的**数学期望**![Imgur](https://i.imgur.com/D0fdsUr.png)最大化。
