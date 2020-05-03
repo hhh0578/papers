@@ -68,7 +68,7 @@ Y<sup>\*</sup>代表**参考结果**，Y代表**输出**。
   该方法用来表示local delay。
   - Target Delay\
   针对d和c，定义d<sup>\*</sup>和c<sup>\*</sup>表示**目标延迟**，因为不同场景可能需要的延迟标准不同。于是**延迟**的报酬函数写作如下：\
-  ![Imgur](https://i.imgur.com/OZqmyFY.png)
+  ![Imgur](https://i.imgur.com/IGQKPJC.png)
 - 权衡**质量**和**延迟**
 同步翻译要求权衡这两项指标，显然这两项是一对此消彼长的矛盾关系。本文定义报酬：\
 ![Imgur](https://i.imgur.com/9touHLs.png)\
