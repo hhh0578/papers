@@ -60,7 +60,6 @@ Y<sup>\*</sup>代表**参考结果**，Y代表**输出**。
 
 - **Delay**
 为简单起见，每个单词的延迟时间认定为一致。
-
   - [Average Proportion（AP）](https://arxiv.org/abs/1606.02012)\
   ![Imgur](https://i.imgur.com/4vVFgOt.png)\
   s(&tau;)表示输出单词y<sub>&tau;</sub>的时候读取的原文单词个数。该方法用来表示global delay。
@@ -70,11 +69,39 @@ Y<sup>\*</sup>代表**参考结果**，Y代表**输出**。
   - Target Delay\
   针对d和c，定义d<sup>\*</sup>和c<sup>\*</sup>表示**目标延迟**，因为不同场景可能需要的延迟标准不同。于是**延迟**的报酬函数写作如下：\
   ![Imgur](https://i.imgur.com/OZqmyFY.png)
-
 - 权衡**质量**和**延迟**
 同步翻译要求权衡这两项指标，显然这两项是一对此消彼长的矛盾关系。本文定义报酬：\
 ![Imgur](https://i.imgur.com/9touHLs.png)\
 调整的参数为公式9中的相关系数&alpha;和&beta;，以及**目标延迟**d<sup>\*</sup>和c<sup>\*</sup>。
 ### 强化学习
 - [Policy Gradient](https://link.springer.com/article/10.1007/BF00992696)\
-固定预训练好的NMT模型，用Policy gradient训练机器人。Policy gradient将未来的累计报酬的**数学期望**![Imgur](https://i.imgur.com/D0fdsUr.png)最大化。
+固定预训练好的NMT模型，用Policy gradient训练机器人。Policy gradient将未来的累计报酬的**数学期望**![Imgur](https://i.imgur.com/D0fdsUr.png)最大化，得到梯度：\
+![Imgur](https://i.imgur.com/wwfzrie.png)\
+其中![Imgur](https://i.imgur.com/jSaMXyy.png)代表**未来累计报酬**。实际计算时候会从当前策略&pi;<sub>&theta;</sub>采样数个action trajectories来计算相应的报酬。
+- [Variance Reduction](https://arxiv.org/abs/1402.0030) \
+直接计算policy gradient会引出巨大方差，导致学习不稳定不高效，于是本文采用了variance recution techniques。
+  > ![Imgur](https://i.imgur.com/HD9jqlA.png)
+  
+于是整个算法如算法2所示：\
+![Imgur](https://i.imgur.com/DHu2naQ.png)
+## 同步beam search
+仅在连续WRITE的时候使用Beam Search。\
+![Imgur](https://i.imgur.com/q4bvpbh.png)
+## 实验
+### 数据集
+- train data：[WMT15](http://www.statmt.org/wmt15/)，EN-DE双向，EN-RU双向
+- validation data：newstest-2013
+- [BPE](https://arxiv.org/abs/1508.07909)处理
+- 句子长度小于50个subword
+### 环境&机器人设定
+- NMT环境：设定与[Cho](https://arxiv.org/abs/1606.02012)一致。
+- 机器人：512GRUs + softmax function，Adam，mini-batch 10。
+- 动作采样数：5列trajectories。测试时不采样，只取概率最高列。
+### Baselines
+- Wait-Until-End（WUE）：原句全部读取之后开始WRITE。
+- Wait-One-Step（WOS）：每次READ之后就WRITE。
+- Wait-If-Worse/Wait-if-Diff（WIW/WID）；[Cho](https://arxiv.org/abs/1606.02012)的方法
+- Segmentation-based（SEG）：[Oda](https://www.aclweb.org/anthology/P14-2090.pdf)的方法。本文中对比了simple greedy method（SEG1）和greedy method with POS Constraint（SEG2）方法。
+### 结果分析
+![Imgur](https://i.imgur.com/q4bvpbh.png)
+
