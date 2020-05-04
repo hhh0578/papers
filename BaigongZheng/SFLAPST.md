@@ -21,4 +21,44 @@ r是正整数，M是预训练的NMT模型，s<sub>&le;</sub>代表前i个原文�
 调节r参数能得到**质量**和**延迟**两个指标下想要的操作列。但生成操作列时仍需要两个约束：
 - 语言的语序问题依旧可能造成巨大延迟：用Average Lagging（AL）进行过滤。
 - 预训练的模型可能太aggressive，有些句子原文信息还没读完就翻译完了，也许是因为本文模型在同一个数据下进行训练的关系：只接受在最后一次WRITE的时候读入了所有原文的操作列。
+## 同步policy的有师学习框架
+以[Transformer](https://arxiv.org/abs/1706.03762)为基础，和[wait-k](https://arxiv.org/abs/1810.08398)模型一样对encoder的**隐藏层**进行处理。policy在i step的输入o<sub>i</sub>由以下三部分组成
+- h<sup>s</sup><sub>i</sub>：i step时原文第一个单词的last-layer hidden state。
+- h<sup>t</sup><sub>i</sub>：i step时译文第一个单词的last-layer hidden state。
+- c<sub>i</sub>：i step时current input target word在所有decoder attention层上的cross-attention scores，取所有current source words的均值。
+即o<sub>i</sub>=\[h<sup>s</sup><sub>i</sub>, h<sup>t</sup><sub>i</sub>,c<sub>i</sub>\]
+a<sub>i</sub>代表操作列a中的第i项操作。pocily的决定取决于所有之前的输入o<sub>&le;i</sub>和所有之前的操作a<sub>&lt;i</sub>，于是需要最大化的概率公式如下：\
+![Imgur](https://i.imgur.com/XENvANb.png)\
+其中p<sub>&theta;</sub>代表参数&theta;组成的policy分布。
+## 延迟可控的Decoding
+这里介绍一种简单的延迟可控计算技巧，无需重新训练policy model。
 
+设定&rho;为概率阈值。每一步中仅当READ的概率大于&rho;的时候踩选择READ，否则选择WRITE。这个阈值就权衡了**质量**和**延迟**。
+## 实验
+### 数据集
+- 训练集：WMT15 （EN&harr;DN）
+- validation set：newstest-2013
+- test set：newstest-2015
+- BPE处理
+- 句子pair长度小于50。
+### 模型设定
+- Transformer（[PyTorch-based Open-NMT](https://arxiv.org/abs/1701.02810)）
+- **原文**添加了<eos> token。
+- recurrent policy model：维度64、512 units的GRU layer；维度2，fully-connected 的ReLU激发函数；softmax函数生成action分布。
+- 质量评价：BLEU
+- 延迟评价：Averaged Lagging
+  
+### 操作列生成的影响
+本文结果设定rank r=50和filtering latency &alpha=3;图1展示了&rho;的影响，点出来的位置时&rho;=0.5。\
+![Imgur](https://i.imgur.com/eLOIb1v.png)\
+实验表明&alpha;影响较大，rank影响不大。
+### 比较结果
+- [Wait-If-Worse/Wait-it-Diff（WIW/WID）](https://arxiv.org/abs/1606.02012)
+  只用于预训练model。预先读取s<sub>0</sub>个原文单词，仅当概率最大的target word概率下降时READ（WIW）；或仅当概率最大的target word变了的时候READ（WID）。
+- [RL method](https://www.aclweb.org/anthology/E17-1099/)
+  AP-based reward function效果更好，本文仅仅比较CW-based。
+- [wait-k model和test-time wait-k method](https://www.aclweb.org/anthology/P19-1289/)
+  test-time直接用预训练的model，wait-k的以相同模型构造重新训练。
+  
+图2展示了比较结果。\
+![Imgur](https://i.imgur.com/Hiz4IGQ.png)
