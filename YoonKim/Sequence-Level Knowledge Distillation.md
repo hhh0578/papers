@@ -34,5 +34,36 @@ s=\[s<sub>1</sub>,&hellip;,s<sub>I</sub>\]和t=\[t<sub>1,&hellip;</sub>,s<sub>J<
 ![Imgur](https://i.imgur.com/R49JUkH.png)\
 &alpha;是mixture parameter。
 ## NMT的知识蒸馏
+![Imgur](https://i.imgur.com/9Mkz8DI.png)
 ### Word-Level知识蒸馏
+NMT系统的训练通过最小化每个位置的word NLL，L<sub>WORD-NLL</sub>进行。于是传统的multi-class cross-entropy就能用在知识蒸馏上：\
+![Imgur](https://i.imgur.com/eMTfpDz.png)\
+V代表target vocabulary set。  
+训练student的时候可以以L<sub>WORD-KD</sub>和L<sub>WORD-NLL</sub>的混合作为目标函数。这种方法极为图1中的word-level knowledge distillation。
+### Sequence-Level知识蒸馏
+**序列分布**在NMT中尤为重要，因为test时这种错误会向前传递。  
+首先，在任意长度J下，模型可能生成的序列t&isin;&Tau;的概率是：  
+![Imgur](https://i.imgur.com/rEPJMQC.png)  
+
+而**序列分布**的negative log-likelihood的one-hot形式则为：  
+![Imgur](https://i.imgur.com/B8cepyG.png)  
+y为observed sequence。  
+
+用q(t|s)表示teacher在所有可能生成的序列构成的sample space中的序列分布：  
+![Imgur](https://i.imgur.com/koGdsE7.png)  
+要注意L<sub>SEQ-KD</sub>的求和是指数级，但本文仍旧认为这种序列级别的知识蒸馏能获取更大范围的知识。
+
+于是考虑如何近似这个函数，最简单办法就是取mode：  
+![Imgur](https://i.imgur.com/gjBJ4To.png)  
+而这个本身是不可能的，所以就利用beam search来获取一个近似，其误差为：  
+![Imgur](https://i.imgur.com/HIsrKxN.png)  
+y_hat代表teacher模型下beam search的输出。
+
+总结起来序列知识蒸馏步骤如下：  
+1. 训练一个teacher model
+2. 在训练集上运行beam search得到一个输出，构成新数据集。
+3. 在这新的数据集上训练student。
+步骤3和单词知识蒸馏一样，只不过换了数据集。如图1（center）。
+
+
 
