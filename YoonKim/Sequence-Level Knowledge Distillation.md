@@ -76,7 +76,7 @@ y_hat代表teacher模型用beam search输出的结果。
 由于第二项难以计算，依旧利用前述的mode approximation，得到：  
 ![Imgur](https://i.imgur.com/bgH5WXN.png)  
 
-可惜这个过程并不理想：1.这把数据集加倍了；2.一个source会得到两个target。由于y和y_hat常常相去甚远，后者的问题尤为严重。所以single-sequence approximation更为有用。灵感来自于[local updating](https://www.aclweb.org/anthology/P06-1096/)，即teacher模型中概率较高，且与y相近的序列来训练：  
+可惜这个过程并不理想：1.这把数据集加倍了；2.一个source会得到两个target。由于y和y_hat常常相去甚远，后者的问题尤为严重。所以single-sequence approximation更为有用。灵感来自于[local updating](https://www.aclweb.org/anthology/P06-1096/)，即用teacher模型中概率较高，且与y最相近的序列来训练：  
 ![Imgur](https://i.imgur.com/vmae0NV.png)  
 sim是用来表示近似度的函数（如Jaccard similarity或BLEU）。按照local updating的做法，就可以从beam search近似选择序列：  
 ![Imgur](https://i.imgur.com/bzCL7fr.png)  
@@ -94,4 +94,58 @@ sim是用来表示近似度的函数（如Jaccard similarity或BLEU）。按照l
 
 ![Imgur](https://i.imgur.com/AEZgl6G.png)  
 运行beam searrch之后，将final hidden state用t-SNE表示了出来。轮廓表示的是corresponding（smoothed） probability。本例中，beam search的最高答案（绿色）距离真实答案（red）很远。所以训练的时候用的是beam中存在的，和真实答案有highest sim的答案（purple）。
+
+## 实验设置
+### 数据集
+- high resource，
+  - 训练集：WMT2014（En-Ge）
+  - dev set：newstest2012/newstest2013
+  - test set：newstest2014
+  - 用50k个高频词，其他作为UNK。
+  - teacher model：4 x 1000 LSTM
+  - student model：2 x 300和2 x 500
+- low resource
+  - 训练集：IWSLT2015（Thal-En）
+  - dev set：2010/2011/2012
+  - test set：2012/2013
+  - 词汇25k
+  - teacher model：2 x 500（performed better than 4 x 1000 和 2 x 750）
+  - student model：2 x 100，
+其他训练细节参考[Luong](https://arxiv.org/abs/1508.04025)
+### 实验参数
+用multi-bleu.perl计算BLEU
+- Word-KD：用**原始数据**和**cross-entropy of the teacher distribution**训练  
+&alpha;&isin;{0.5，0.9}，发现0.5最佳。
+- Seq-KD：用**teacher generated data**训练  
+beam size K=5（增加这个参数并没有效果）
+- Seq-Inter：用teacher的beam search（K=35）中BLEU最高的作为数据训练。  
+
+在**原始数据**和**Seq-KD数据**训练前都对预训练模型以rate 0.1实施了fine-tuning，在En-De中为了效率仅仅用了部分（~50%）。
+
+## 实验结果
+![Imgur](https://i.imgur.com/PUax1L5.png)
+
+### decoding速度
+![Imgur](https://i.imgur.com/t7q5N1R.png)
+
+### Weight Pruning
+学习时大部分的参数都在embedding，可是在rum-time时embedding layer只起到一个查询的作用，因此考虑是否能在student模型上剪枝。[See](https://www.aclweb.org/anthology/K16-1029/)研究过大型神经网络80%~90%的参数都可以剪枝，而且对结果影响不大。  
+于是本文针对student模型，减去几个绝对值最小的x%个参数后，用0.2的训练rate重新训练。对Seq-KD data的fine-tuning则是0.1。
+
+![Imgur](https://i.imgur.com/BH1R1rt.png)
+
+且由此发现，Knowledge distillation和Weight pruning是一个正交关系。
+
+## 数据压缩的相关研究
+- Low rank factorizations of weight matrices
+- sparsity-inducing regularizers
+- binarization of weights
+- [weight sharing](https://arxiv.org/abs/1510.00149)
+
+本文用到的技巧
+- [local updating](https://www.aclweb.org/anthology/P06-1096/)
+- [hope/fear traning](http://jmlr.csail.mit.edu/papers/volume13/chiang12a/chiang12a.pdf)
+- [SEARN](https://arxiv.org/abs/0907.0786)
+- [Dagger](https://arxiv.org/abs/1011.0686)
+- [minimum risk training](https://arxiv.org/abs/1512.02433)
 
