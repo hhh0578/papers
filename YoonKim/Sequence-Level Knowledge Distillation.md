@@ -53,17 +53,45 @@ y为observed sequence。
 ![Imgur](https://i.imgur.com/koGdsE7.png)  
 要注意L<sub>SEQ-KD</sub>的求和是指数级，但本文仍旧认为这种序列级别的知识蒸馏能获取更大范围的知识。
 
-于是考虑如何近似这个函数，最简单办法就是取mode：  
+于是考虑如何近似这个函数，最简单办法就是取mode（从teacher训练的结果中取概率最大的序列：  
 ![Imgur](https://i.imgur.com/gjBJ4To.png)  
-而这个本身是不可能的，所以就利用beam search来获取一个近似，其误差为：  
+而这个过程本身极其困难，所以就利用beam search来获取一个近似，最后误差就为：  
 ![Imgur](https://i.imgur.com/HIsrKxN.png)  
-y_hat代表teacher模型下beam search的输出。
+y_hat代表teacher模型用beam search输出的结果。
+> 其实还能在beam search的结果中取数学期望来近似：  
+![Imgur](https://i.imgur.com/LzUCtFa.png)  
+![Imgur](https://i.imgur.com/cRKp3hC.png)  
+然而实验中发现取mode效果更好。
 
 总结起来序列知识蒸馏步骤如下：  
 1. 训练一个teacher model
 2. 在训练集上运行beam search得到一个输出，构成新数据集。
 3. 在这新的数据集上训练student。
-步骤3和单词知识蒸馏一样，只不过换了数据集。如图1（center）。
+步骤3和单词知识蒸馏一样，只不过换了数据集。见图1（center）。
+### Sequence-Level Interpolation
+最后考虑也利用原数据集进行训练，取一个L<sub>SEQ-KE</sub>和L<sub>SEQ-NLL</sub>的混合：  
+![Imgur](https://i.imgur.com/k1HO7kN.png)  
+其中y为gold target sequence。
 
+由于第二项难以计算，依旧利用前述的mode approximation，得到：  
+![Imgur](https://i.imgur.com/bgH5WXN.png)  
 
+可惜这个过程并不理想：1.这把数据集加倍了；2.一个source会得到两个target。由于y和y_hat常常相去甚远，后者的问题尤为严重。所以single-sequence approximation更为有用。灵感来自于[local updating](https://www.aclweb.org/anthology/P06-1096/)，即teacher模型中概率较高，且与y相近的序列来训练：  
+![Imgur](https://i.imgur.com/vmae0NV.png)  
+sim是用来表示近似度的函数（如Jaccard similarity或BLEU）。按照local updating的做法，就可以从beam search近似选择序列：  
+![Imgur](https://i.imgur.com/bzCL7fr.png)  
+&Tau;<sub>K</sub>代表beam search中的K-best list。sim用的则是[sentence-level BLEU](https://www.aclweb.org/anthology/W14-3346/)。
+
+定义用y_va训练知识蒸馏的过程可以如下描述：  
+假定数据分布D中有一个**真实结果**t（无法观察到），再假定有一个受**噪音**影响的观察结果y：
+1. t ~ D
+2. y ~ &epsilon;(t)， 其中&epsilon;为独立的noise function，会小概率随机替换掉t中的单词。
+
+此时理想的student分布应当为混合分布：  
+![Imgur](https://i.imgur.com/GMBJPrh.png)  
+
+由于噪音的影响，D导出的高概率会分布在y附近，因此最大化的结果并非y也并非y_hat。可以看出，对于这个混合分布，y_va是一个合理的近似，框架看图1（right），可视化结果见图2。
+
+![Imgur](https://i.imgur.com/AEZgl6G.png)  
+运行beam searrch之后，将final hidden state用t-SNE表示了出来。轮廓表示的是corresponding（smoothed） probability。本例中，beam search的最高答案（绿色）距离真实答案（red）很远。所以训练的时候用的是beam中存在的，和真实答案有highest sim的答案（purple）。
 
