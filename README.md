@@ -1,6 +1,6 @@
 # papers
 
-[2016 Sequence-Level Knowledge Distillation](https://arxiv.org/abs/1606.07947)
+[2016 Sequence-Level Knowledge Distillation](https://github.com/hhh0578/papers/blob/master/YoonKim/Sequence-Level%20Knowledge%20Distillation.md)
 
 [2017 Learning to Translate in Real-time with Neural Machine Translation](https://github.com/hhh0578/papers/blob/master/JiataoGu/Real-time%20NMT.md)
 
