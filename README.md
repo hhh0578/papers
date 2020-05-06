@@ -10,7 +10,7 @@
 利用整句的数据集构造一个部分句的数据集混在一起训练，以减少翻译途中的句子错误。
 
 [2018 NAT (Non-Autoregressive Transformer)](https://github.com/hhh0578/papers/blob/master/JiataoGu/Non-Autoregressive%20Transformer.md)  
-构造一个fertility，翻译时decoder可以不用递归按序生成译文，而是从fertility一步生成完整译文。
+构造一个fertility作为译文蓝图，翻译时decoder可以不用递归按序生成译文，而是从fertility一步生成完整译文。
 
 [2019 LevT (Levenshtein Transformer)](https://github.com/hhh0578/papers/blob/master/JiataoGu/Levenshtein%20Transformer.md)
 
