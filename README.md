@@ -6,7 +6,7 @@
 [2017 Learning to Translate in Real-time with Neural Machine Translation](https://github.com/hhh0578/papers/blob/master/JiataoGu/Real-time%20NMT.md)  
 组合上下文向量、decoder状态和候补单词作为环境参数训练RL模型，选择是否采用候补单词（WRITE）或是不采用（READ）。
 
-[2018 Low-Latency Neural Speech Translation](https://github.com/hhh0578/papers/blob/master/Low-Latency%20Neural%20Speech%20Translation.md)  
+[2018 Low-Latency Neural Speech Translation](https://github.com/hhh0578/papers/blob/master/%5BJanNiehues%5DLow-Latency%20Neural%20Speech%20Translation.md)  
 利用整句的数据集构造一个部分句的数据集混在一起训练，以减少翻译途中的句子错误。
 
 [2018 NAT (Non-Autoregressive Transformer)](https://github.com/hhh0578/papers/blob/master/JiataoGu/Non-Autoregressive%20Transformer.md)  
