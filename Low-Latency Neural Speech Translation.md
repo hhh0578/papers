@@ -48,7 +48,7 @@ Multi-task学习在NLP问题中被广泛利用：
 - 数据集：Europarl和WIT-TED corpora
 - 测试集：IWSLT evaluation campaign
 - 所有系统都用in-domain TED data微调过。
-- 在En&raar;Sp和En&rarr;Fr用强化学习优化了GLEU scores。
+- 在En&rarr;Sp和En&rarr;Fr用强化学习优化了GLEU scores。
 - 在部分语句翻译上只用了TED corpus
 - 训练用的[OpenNMT-py toolkit](https://arxiv.org/abs/1701.02810)
 - 原句和译文都用了BPE
