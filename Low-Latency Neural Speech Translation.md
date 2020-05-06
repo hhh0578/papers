@@ -42,3 +42,33 @@ Multi-task学习在NLP问题中被广泛利用：
 
 #### sequence level优化
 本文还用了[policy gradient methods](https://arxiv.org/pdf/1511.06732.pdf)强化学习来最大化[GLEU score](https://www.semanticscholar.org/paper/Google's-Neural-Machine-Translation-System%3A-the-Gap-Wu-Schuster/dbde7dfa6cae81df8ac19ef500c42db96c3d1edd)。这使得生成的句子不会太长。而且由于这种方法高方差，也用了[Rennie](https://arxiv.org/abs/1612.00563)的方法，利用greedy search的baseline减少方差。
+## 实验结果
+### 数据集
+用的**语言组合**有：EnSp，EnFr，DeEn
+- 数据集：Europarl和WIT-TED corpora
+- 测试集：IWSLT evaluation campaign
+- 所有系统都用in-domain TED data微调过。
+- 在En&raar;Sp和En&rarr;Fr用强化学习优化了GLEU scores。
+- 在部分语句翻译上只用了TED corpus
+- 训练用的[OpenNMT-py toolkit](https://arxiv.org/abs/1701.02810)
+- 原句和译文都用了BPE
+### 评价方式
+- Bleu：由于ASR会自动分段，于是需要重组分段以配合reference，因此用了[Matusov](https://pdfs.semanticscholar.org/6de4/f789b2d56f40105b79692fc42809991040c2.pdf)的方法。
+- 本文还评价了该模型是如何减少SLT模型的**修正次数**的。为此，本文输出了**ASR模型**和**翻译模型**的所有输出，对于每次的updated translation，本文给出了相邻的译文s<sub>t</sub>和s<sub>t+1</sub>并且计算了这个过程中所需要的re-writing。其中，修正的单词数是要用译文s<sub>t</sub>的长度减去了两者之间的共同前缀长度（Word Up）。本文的方法同样统计了第一个修正的单词后的单词数。也给出了修正过的语句数（Messg. Up.）。
+### 实验
+#### 初始化结果
+**第一组** 
+初始化了EnSp的翻译结果，见表1。给出了**整句翻译**的dev和test结果（Valid，Test）；给出了**所有possible prefixes**的翻译结果（TEDTest Partial）；给出了**ASR output**的翻译结果（SLT）。初始化实验中reference是按照原文比例取的。baseline系统仅仅用了**整句**训练。“Partial”系统是用**部分句子**微调过的。  
+**第二组**
+训练集中用了alignment-based method生成reference的**部分语句**。由于差别不大，后续实验继续用length-ratio based method。  
+**第三组**
+用BLEU目标函数强化训练。模型先是用cross-entropy训练，然后用RL训练。此处同样先用**整句**得到了一个baseline，然后用**整句**和**部分句**混合的数据进行了multi-task训练。  
+![Imgur](https://i.imgur.com/XOQiOLH.png)
+
+**EnFr实验**
+和之前一样训练了一个baseline，然后用baseline训练了一个RL。验证时时用了一个**整句**的数据集（tst2010 Fianl）、一个**混合**的数据集（tst2010 Mix）和一个**ASR**的数据集（SLT）。  
+![Imgur](https://i.imgur.com/e3fG6J4.png)
+
+**DeEn**
+这个翻译效果不佳，也许时因为语序重组更严重。  
+![Imgur](https://i.imgur.com/Jjk14WK.png)
