@@ -54,7 +54,7 @@ Multi-task学习在NLP问题中被广泛利用：
 - 原句和译文都用了BPE
 ### 评价方式
 - Bleu：由于ASR会自动分段，于是需要重组分段以配合reference，因此用了[Matusov](https://pdfs.semanticscholar.org/6de4/f789b2d56f40105b79692fc42809991040c2.pdf)的方法。
-- 本文还评价了该模型是如何减少SLT模型的**修正次数**的。为此，本文输出了**ASR模型**和**翻译模型**的所有输出，对于每次的updated translation，本文给出了相邻的译文s<sub>t</sub>和s<sub>t+1</sub>并且计算了这个过程中所需要的re-writing。其中，修正的单词数是要用译文s<sub>t</sub>的长度减去了两者之间的共同前缀长度（Word Up）。本文的方法同样统计了第一个修正的单词后的单词数。也给出了修正过的语句数（Messg. Up.）。
+- 本文还评价了该模型是如何减少SLT模型的**修正次数**的。为此，本文输出了**ASR模型**和**翻译模型**的所有输出，对于每次的updated translation，本文给出了相邻的译文s<sub>t</sub>和s<sub>t+1</sub>并且计算了这个过程中所需要的re-writing。其中，修正的单词数是用译文s<sub>t</sub>的长度减去s<sub>t</sub>和s<sub>t+1</sub>之间的共同前缀长度（Word Up）。也给出了修正过的语句数（Messg. Up.）。
 ### 实验
 #### 初始化结果
 **第一组** 
