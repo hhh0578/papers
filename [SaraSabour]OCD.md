@@ -87,6 +87,9 @@ Learning to Search（L2S）与OCD类似，用类似[LOLS](https://arxiv.org/abs/
 
 ## 实验
 
+## 附录A OCD算法
+![Imgur](https://i.imgur.com/SyjyS8i.png)
+
 
 
 
