@@ -68,3 +68,33 @@ p<sub>D</sub>代表empirical data distribution，在数据集D上均一分布。
 2. 对于任意![Imgur](https://i.imgur.com/2xqwvSY.png)的k，用![Imgur](https://i.imgur.com/71cSQPs.png)代表y\*的后缀，可以得到结论![Imgur](https://i.imgur.com/sHt7Xc1.png)i。一方面这表示有编辑方法能让编辑距离为m<sub>i</sub>，另一方面按照Lemma.1表述，m<sub>i</sub>是下界，因此y\*<sub>&ge;k</sub>就是y_tilde<sub>&lt;i</sub>的最优后缀。
 3. 进一步说，这反过来直接证明了最优后缀被限制为y\*<sub>&ge;k</sub>且![Imgur](https://i.imgur.com/YVo3qqg.png)。
 既然最优后缀得到限制，就可以得出报酬最大的后缀从token y\*<sub>k</sub>开始。由于![Imgur](https://i.imgur.com/YVo3qqg.png)，可以通过计算y_tilde和y\*所有前缀的编辑距离计算最优extensions，这能用复杂度O（|y_tilde|,|y\*|）的动态编程计算。对于一个前缀y_tilde<sub>&lt;t</sub>，计算得到和所有y\*前缀的最小编辑距离m<sub>i</sub>后，对所有和y\*<sub>&lt;k</sub>编辑距离为m<sub>i</sub>的k，定义![Imgur](https://i.imgur.com/NiLmO0d.png)。其他token的Q\*为-m<sub>i</sub>-1。
+## 相关研究
+该研究出发点是[Learning to Search](https://arxiv.org/abs/0907.0809)和Imitation Learning techniques，其想法在于训练student policy去学习expert teacher。
+
+与本文类似的一个方法[DAgger](https://arxiv.org/abs/1011.0686)从past student model中取样得到trajectories数据集，然后模仿一个既有的expert policy &pi;\*来优化policy。OCD与此类似，对所有的前缀学习策略policy &pi;\*。只不过OCD中策略直接从online student中获取。因为训练中不会提供oracle policy，因此通过找到Q-value最优解来得到最优策略。
+
+[AggreVatTeD](https://arxiv.org/abs/1703.01030)方法试图建立一个无偏移的Q-value，利用variance reduction techniques和共轭矩阵解决policy optimization problem。OCD计算exact Q-values且用的是普通SGD优化。更重要的是，本文roll-in前缀都是从srudent model中获取的，而且不需要和ground truth samples混起来。虽然[Cheng和Boots](https://www.researchgate.net/publication/322674823_Convergence_of_Value_Aggregation_for_Imitation_Learning)研究过将其混合起来能够有效正则化模仿学习中的value aggregation convergence。
+
+本文方法和[Policy Distillation](https://arxiv.org/abs/1511.06295)有较大关系，他将已训练好的[Deep Q-Network](https://web.stanford.edu/class/psych209/Readings/MnihEtAlHassibis15NatureControlDeepRL.pdf)机器人作为expert teacher，然后从teacher采样actiono sequence，用KL误差将Q-value蒸馏到student网络中去。OCD采用了类似的误差函数，但并非用bootstrapping估计Q-value，而是直接用动态编程计算了Q-value。而且sample取自student而不是teacher。
+
+Learning to Search（L2S）与OCD类似，用类似[LOLS](https://arxiv.org/abs/1502.02206)等技巧试图对每个state-action pair估计Q-value。这种方式测试多个roll-out生成的前缀然后整合一个返回值。[SeaRNN](https://arxiv.org/abs/1706.04499)则是为每个token计算cost-to-go，每一步以词汇表大小roll-out，导致复杂度为O（VT）。这就难以用到实际生活中。OCD的结构每步就只有O（V+T）。而且不需要ground truth的前缀来让维持训练稳定。
+
+强化学习比如[REINFORCE](https://arxiv.org/abs/1511.06732)，[Actor-Critic](https://arxiv.org/abs/1607.07086)和[Self-critical Sequence Training](https://arxiv.org/abs/1612.00563)也用来处理sequence prediction problem。这些方法从模型分布中得到sample sequence然后利用sequence-level task objective（比如编辑距离）来逆传播计算。[Beam Search Optimization](https://arxiv.org/abs/1606.02960)和[Edit-based Minimum Bayes Risk（EMBR）](https://arxiv.org/abs/1712.01818)相似，只不过取样用的是Beam search。这些模型都有high variance和credit assignment的问题。相对的，OCD将序列级目标函数分解成了token level optimal completion target。这就减少了梯度方差让模型更稳定。而且不同于大多数RL方法，本文完全没有利用MLE预训练或是在优化函数中加入log-likelihood。[Bahdanau](https://arxiv.org/abs/1511.06456v2)也给出过使用编辑距离的模型，但是他是将模型输出到编辑距离的值来体操suboptimal performance。本文最先提出的构建optimal policy然后用知识蒸馏训练。另外，[Karita](https://ieeexplore.ieee.org/document/8462245)也分解过编辑距离，分解为每个token的分布然后用于EMBR框架。也就是说，他并非基于理论分析做的这个选择，而且他的梯度报告了高方差。
+
+[Reward Augmented Maximum Likelihood](https://arxiv.org/abs/1609.00150)极其各种衍生也和RL类似。RAML没有从模型分布取样，而是从true exponentiated reward distribution取样了。然而，这种方法往往难以实现。而且RAML也碰到了RL模型中会有的credit assignment问题。[SPG](https://arxiv.org/abs/1709.09346)改用了policy gradient formulation来从reward shaped model distribution中取样。这种取样方式比起RAML更接近**从模型取样**。为此SPG提供了一个启发式的ROUGE score。SPG达到了降低方差的效果，但也和RAML、RL同样有credit assignment的问题。
+
+通常来说，OCD擅长从零开始的模型训练，能作为MLE的替代。因此OCD和需要MLE预训练，或是需要joint optimization的模型毫不冲突。
+
+## 实验
+
+
+
+
+
+
+
+
+
+
+
+
