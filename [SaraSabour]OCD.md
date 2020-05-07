@@ -59,10 +59,12 @@ p<sub>D</sub>代表empirical data distribution，在数据集D上均一分布。
 表2举了一个例子，计算“Satrapy”和“Sunday”的编辑距离。本文的目标是列出所有最优后缀y&isin;Y得出和y\*距离最小的所有序列\[y_tilde<sub>&lt;i</sub>,y\]。  
 ![Imgur](https://i.imgur.com/zMXkXLE.png)
 
-> Lemma 1. 接上任意后缀y&isin;Y后得到的编辑距离有下界m<sub>i</sub>。（即如果给其中一个句子加了点东西，编辑距离必然大于等于之前的句子）  
+> Lemma 1. 接上任意后缀y&isin;Y后得到的编辑距离有下界m<sub>i</sub>。  
 ![Imgur](https://i.imgur.com/npwyLlp.png)  
-证明：考虑从距离D逆推到D<sub>&lt;0</sub>的路径P，按公式7，继承了相邻父级的最小值。接下来讨论：
-> 1. 假定路径P经过第i行的（i，k）格，按照公式7，路径上的编辑距离不会减小，因此![Imgur](https://i.imgur.com/SzGPaBx.png)
-> 2. 对于任意![Imgur](https://i.imgur.com/2xqwvSY.png)的k，用![Imgur](https://i.imgur.com/71cSQPs.png)代表y\*的后缀，可以得到结论![Imgur](https://i.imgur.com/sHt7Xc1.png)i。一方面这表示有下届m<sub>i</sub>，另一方面也表示Lemma.1的下届就是m<sub>i</sub>。因此y\*<sub>&ge;k</sub>就是y_tilde<sub>&lt;i</sub>的最优后缀。
-> 3. 进一步说，这反过来直接证明了最优后缀被限制为y\*<sub>&ge;k</sub>且![Imgur](https://i.imgur.com/YVo3qqg.png)。
+证明：考虑从距离D逆推到D<sub>&lt;0</sub>的路径P，按公式7，继承了相邻父级的最小值。
 
+接下来
+1. 假定路径P经过第i行的（i，k）格，按照公式7，路径上的编辑距离不会减小，因此![Imgur](https://i.imgur.com/SzGPaBx.png)
+2. 对于任意![Imgur](https://i.imgur.com/2xqwvSY.png)的k，用![Imgur](https://i.imgur.com/71cSQPs.png)代表y\*的后缀，可以得到结论![Imgur](https://i.imgur.com/sHt7Xc1.png)i。一方面这表示有编辑方法能让编辑距离为m<sub>i</sub>，另一方面按照Lemma.1表述，m<sub>i</sub>是下界，因此y\*<sub>&ge;k</sub>就是y_tilde<sub>&lt;i</sub>的最优后缀。
+3. 进一步说，这反过来直接证明了最优后缀被限制为y\*<sub>&ge;k</sub>且![Imgur](https://i.imgur.com/YVo3qqg.png)。
+既然最优后缀得到限制，就可以得出报酬最大的后缀从token y\*<sub>k</sub>开始。由于![Imgur](https://i.imgur.com/YVo3qqg.png)，可以通过计算y_tilde和y\*所有前缀的编辑距离计算最优extensions，这能用复杂度O（|y_tilde|,|y\*|）的动态编程计算。对于一个前缀y_tilde<sub>&lt;t</sub>，计算得到和所有y\*前缀的最小编辑距离m<sub>i</sub>后，对所有和y\*<sub>&lt;k</sub>编辑距离为m<sub>i</sub>的k，定义![Imgur](https://i.imgur.com/NiLmO0d.png)。其他token的Q\*为-m<sub>i</sub>-1。
