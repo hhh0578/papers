@@ -89,9 +89,17 @@ Learning to Search（L2S）与OCD类似，用类似[LOLS](https://arxiv.org/abs/
 
 ## 附录A OCD算法
 ![Imgur](https://i.imgur.com/SyjyS8i.png)
+- 数据集：Wall Street Journal（WSJ）和Librispeech
+- 本文仅仅尝试e2e，且没有rescoring的语音识别模型。
+### Wall Street Journal
+- 训练集：standard configuration of si284
+- validation：dev93
+- 测试集：eval92
+- [attention-based s2s 网络模型with a deep convolutional frontend。](https://arxiv.org/abs/1610.03022)
+- 所有模型beam search size 16
 
-
-
+#### 训练前缀并生成
+在训练中这是终点，至始至终，生成的前缀都没有和真实序列一致。本文将位置对应的不匹配作为OCD的不匹配率。假定生成的前缀和真实前缀完全一致，OCD的target将也会和真实答案一致。因此OCD会等价于MLE。图1表示OCD的前缀mismatch超过25%。图2展示了训练过程中的CER值，
 
 
 
