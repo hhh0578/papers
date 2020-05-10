@@ -13,7 +13,7 @@
 构造一个fertility作为译文蓝图，翻译时decoder可以不用递归按序生成译文，而是从fertility一步生成完整译文。
 
 [2019 OPTIMAL COMPLETION DISTILLATION FOR SEQUENCE LEARNING](https://github.com/hhh0578/papers/blob/master/%5BSaraSabour%5DOCD.md)  
-因为目标函数在训练时只能从真实target预测下一个目标，和实际测试时候用生成target预测下一个目标的过程有偏差，于是在训练时也利用生成的target前缀预测下一个目标。其中构造了一个Q-values，以导出能用以模仿学习的函数。
+因为目标函数在训练时只能从真实target预测下一个目标（MLE），和实际测试时候用生成target预测下一个目标的过程有偏差，于是在训练时也利用生成的target前缀预测下一个目标（OCD）。其中构造了一个Q-values，以导出能用以模仿学习的函数。
 
 [2019 LevT (Levenshtein Transformer)](https://github.com/hhh0578/papers/blob/master/JiataoGu/Levenshtein%20Transformer.md)
 
