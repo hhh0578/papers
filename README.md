@@ -12,6 +12,8 @@
 [2018 NAT (Non-Autoregressive Transformer)](https://github.com/hhh0578/papers/blob/master/JiataoGu/Non-Autoregressive%20Transformer.md)  
 构造一个fertility作为译文蓝图，翻译时decoder可以不用递归按序生成译文，而是从fertility一步生成完整译文。
 
+[2019 OPTIMAL COMPLETION DISTILLATION FOR SEQUENCE LEARNING](https://github.com/hhh0578/papers/blob/master/%5BSaraSabour%5DOCD.md)
+
 [2019 LevT (Levenshtein Transformer)](https://github.com/hhh0578/papers/blob/master/JiataoGu/Levenshtein%20Transformer.md)
 
 [2019 Simpler and Faster Learning of Adaptive Policies for Simultaneous Translation](https://github.com/hhh0578/papers/blob/master/BaigongZheng/SFLAPST.md)  
