@@ -44,7 +44,7 @@ p<sub>D</sub>代表empirical data distribution，在数据集D上均一分布。
 
 拿到prefix-token pairs的Q-values，用exponential transform正规化，表示扩展下一个token时的soft optimal policy：  
 ![Imgur](https://i.imgur.com/KEs4n01.png)  
-&tau;&ge;0表示temperature parameter。要注意这个参数和MLE中的label smothing类似。本实验中对hard targets，&tau;会趋于0，而不需要调整额外参数。
+&tau;&ge;0表示temperature parameter。要注意这个参数和MLE中的label smothing类似。本实验把&tau;设为0，不调整额外参数。。
 
 给定一个训练列(x,y\*)，首先利用当前模型生成完整序列y_tilde ~ p<sub>&theta;</sub>(·|x)。然后再每一步t对next token最小化其optimal policy和model distribution之间的per-step KL divergence。 这个OCD目标函数可以表示为：  
 ![Imgur](https://i.imgur.com/caVWVlA.png)  
