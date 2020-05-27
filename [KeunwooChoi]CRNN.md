@@ -1,5 +1,5 @@
 # [CONVOLUTIONAL RECURRENT NEURAL NETWORKS FOR MUSIC CLASSIFICATION](https://arxiv.org/abs/1609.04243)
-
+[参考代码](https://github.com/keunwoochoi/music-auto_tagging-keras/blob/master/music_tagger_crnn.py)
 ## 本文介绍
 本文提出一种CRNN模型来music tagging。该方法汲取了CNN模型局部特征抽取和RNN模型抽取特征时temporal summarisation的优点。
 
