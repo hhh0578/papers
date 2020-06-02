@@ -59,7 +59,8 @@ base主要用于OpenAI GPT的比较，然而本文是双向，GPT Transformer是
 许多工作如问题回答（QA）和自然语言预测（NLI）都是需要理解句子间关系的。为了训练这种关系，本文训练binarized next sentence prediction task，这数据能从任意单语料库轻松生成。
 
 具体来说，选中句子A和句子B来训练，B有50%的概率是真实的下一句（标记为IsNext），50%的概率是语料库中随机选的句子（标记为NotNext）。如图1中就用C来标记NSP。这方法虽然简单，但对QA和NLI非常有效。
->用NSP训练的C在微调前并不具有实际意义。  
+>用NSP训练的C在微调前并不具有实际意义。
+
 NSP工作与Jernite et al.和Logeswaran and Lee的representation-learning objectives很相似。然而他们仅仅将sentence embeddings转化成down-stream task，BERT则是将左右参数都初始化成了end-task模型的参数。
 #### 预训练数据
 - BooksCorpus（800M单词）
