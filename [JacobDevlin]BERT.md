@@ -33,3 +33,45 @@
 - ImageNet
 
 ## BERT
+#### 模型结构
+多层双向transformer。具体参考Vaswani的论文或是“[The Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html)”。
+- BEART<sub>BASE</sub>（L=12，H=768，A=12，total parameters=110M）
+- BERA<sub>LARGE</sub>（L=24，H=1024，A=16，total parameters=340M）
+base主要用于OpenAI GPT的比较，然而本文是双向，GPT Transformer是单向的。
+
+![Imgur](https://i.imgur.com/0ZWXwjK.png)
+#### 输入形式
+为保证能适用于多工作，输入能明确区分单句和双句。
+
+本文利用30,000 token的[WordPiece embeddings](https://arxiv.org/abs/1609.08144)，其中首字母永远是特殊分类token（\[CLS\]）。该tokne的对应输出在多分类task中用作aggregate sequence representation。
+
+双句打包成单句，通过两种方法区分：1 用特殊token（\[SEP\]）。2 给每个token添加一个learned embedding表示是属于句子A还是句子B。如图1中，输入的embedding为E，\[CLS\]的输出为C，其他的输出为T。
+
+### 预训练BERT
+本文不用传统正序或倒序训练，而是用两个无师学习训练。
+#### Task1：Masked LM
+直观上，双向学习必然比单向或是简单把前序后序模型拼接要有效。可惜，传统的条件语言模型只能单向训练，因为双向条线会让每个单词能间接“看到自己”，模型一下子就能从multi-layerd context预测target单词。  
+
+为了训练深度双向representation，本文随机将输入token隐去部分，然后预测隐去的部分。这个步骤叫做“*masked LM（MLM）*”，这称呼通常指的是[Cloze task](https://www.semanticscholar.org/paper/%22Cloze-procedure%22%3A-a-new-tool-for-measuring-Taylor/766ce989b8b8b984f7a4691fd8c9af4bdb2b74cd)。在本例中，隐藏token的输出会被送到词汇output softmax，正如普通LM。本文所有的实验中隐藏比率为15%。与[denoising auto-encoder](https://dl.acm.org/doi/10.1145/1390156.1390294)不同，本文仅仅预测隐藏单词，而非调整所有输入。  
+
+虽说这种方式得以实现了双向训练，但由于fine-tuning的时候没有\[mask\]，就导致**预训练**和**微调**不匹配。为解决这个问题，隐藏单词的时候并不完全利用\[mask\]token。训练集生成器以15%的概率随机选择预测哪个位置的单词，随后针对这第i个单词，80%的时间用\[mask\]替换，10%的时间随机用token替换，10%的时间不变。然后用T<sub>i</sub>预测原单词，取cross entropy loss。
+#### Task2：Next Sentence Prediction（NSP）
+许多工作如问题回答（QA）和自然语言预测（NLI）都是需要理解句子间关系的。为了训练这种关系，本文训练binarized next sentence prediction task，这数据能从任意单语料库轻松生成。
+
+具体来说，选中句子A和句子B来训练，B有50%的概率是真实的下一句（标记为IsNext），50%的概率是语料库中随机选的句子（标记为NotNext）。如图1中就用C来标记NSP。这方法虽然简单，但对QA和NLI非常有效。
+>用NSP训练的C在微调前并不具有实际意义。
+NSP工作与Jernite et al.和Logeswaran and Lee的representation-learning objectives很相似。然而他们仅仅将sentence embeddings转化成down-stream task，BERT则是将左右参数都初始化成了end-task模型的参数。
+#### 预训练数据
+- BooksCorpus（800M单词）
+- English Wikipedia（2,500M单词）：仅仅提取文字信息，忽视列表，表格和标题。
+为了获取连续长句子的信息，用文档级语料而非打乱的语句级语料，如Billion Word Benchmark，很关键。
+### 微调BERT
+
+
+
+
+
+
+
+
+
