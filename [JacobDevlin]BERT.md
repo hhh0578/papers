@@ -67,8 +67,19 @@ NSP工作与Jernite et al.和Logeswaran and Lee的representation-learning object
 - English Wikipedia（2,500M单词）：仅仅提取文字信息，忽视列表，表格和标题。
 为了获取连续长句子的信息，用文档级语料而非打乱的语句级语料，如Billion Word Benchmark，很关键。
 ### 微调BERT
+由于transformer的自相关机构让BERT得以切合多种downstream task，微调就很直接，只需要替换相应输入和输出——无论是单句子输入还是双句子输入。在双句子的应用中，一套共同流程就是在应用双向cross attention之前独立编码双句子。BERT利用自相关机构来代替这两步，以在两个句子间构建双向cross attention的自相关编码拼接的两个句子。
 
-
+在每个工作中，end-to-end地微调。
+- 输入：1 前后两句（Paraphrasing）。2 hypothesis-premise pairs（entailment）。 3 问答句（QA）。 4 text-&empty;（文本分类或sequence tagging） 
+- 输出：1 单词级别task中输出representation会被送入一个输出层（如sequence tagging，问题解答），分类task中CLS会被送入一个输出层（如entailment，感情分析）。
+相比预训练，微调的成本不高。
+## 实验
+本文在11个NLP tasks上微调了BERT。
+### GLUE
+### SQuAD v1.1
+### SQuAD v2.0
+### SWAG
+## Ablation Studies
 
 
 
