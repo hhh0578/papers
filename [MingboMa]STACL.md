@@ -26,3 +26,7 @@
 ![Imgur](https://i.imgur.com/yrbZ3h8.png)  
 其中 `r=译文长度/原文长度`。
 ## 实现细节
+### 整句翻译transformer
+### 训练同步翻译transformer
+encoder调整mask，让每个原文单词只能看到它之前的单词（类似decoder的self-attention）。  
+![Imgur](https://i.imgur.com/W6OH6I9.png)  
