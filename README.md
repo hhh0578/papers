@@ -26,5 +26,8 @@
 [2019 Simpler and Faster Learning of Adaptive Policies for Simultaneous Translation](https://github.com/hhh0578/papers/blob/master/BaigongZheng/SFLAPST.md)
 先用预训练的模型生成一个读写的操作列，然后用另一个神经网络以这个操作列为参考训练何时读何时写。
 
+[2019 STACL](https://github.com/hhh0578/papers/blob/master/%5BMingboMa%5DSTACL.md)
+针对同声传译定义了prefix to prefix框架，并且提出了其中最简单的情况，即wait-k策略。并且提出了一种新的延迟计算方法Average Lagging。
+
 [2020 Lite Transformer](https://github.com/hhh0578/papers/blob/master/%5BZhanghaoWu%5DLITE%20TRANSFORMER%20WITH%20LONG-SHORT%20RANGE%20ATTENTION.md)
 为了减少计算量，将传统transformer的attention层替换为attention模块和convolution模块，分别处理全局信息和局部信息，强化transformer在NLP方面的专业性。
