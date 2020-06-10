@@ -16,7 +16,7 @@
 ![Imgur](https://i.imgur.com/6sFvGPp.png)
 ### 环境
 - **Encoder：READ**
-encoder将输入X={x<sub>1</sub>,&hellip;x<sub.Ts</sub>}转化喂上下文向量H={h<sub>1</sub>,&hellip;h<sub.Ts</sub>}。通常NMT会用到**双向RNN**，不过不适合同步翻译，因此用单向RNN：\
+encoder将输入X={x<sub>1</sub>,&hellip;x<sub.Ts</sub>}转化w为上下文向量H={h<sub>1</sub>,&hellip;h<sub>Ts</sub>}。通常NMT会用到**双向RNN**，不过不适合同步翻译，因此用单向RNN：\
 ![Imgur](https://i.imgur.com/ZSIo9qi.png)
 - **Decoder：WRITE**
 参考MT实用attention-based decoder。不过，仅仅参考已经读取的input：\
