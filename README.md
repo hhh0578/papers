@@ -31,3 +31,6 @@
 
 [2020 Lite Transformer](https://github.com/hhh0578/papers/blob/master/%5BZhanghaoWu%5DLITE%20TRANSFORMER%20WITH%20LONG-SHORT%20RANGE%20ATTENTION.md)
 为了减少计算量，将传统transformer的attention层替换为attention模块和convolution模块，分别处理全局信息和局部信息，强化transformer在NLP方面的专业性。
+
+[2020 Monotonic Attention](https://github.com/hhh0578/papers/blob/master/%5BXutaiMa%5DMONOTONICMULTIHEADATTENTION.md)
+在Transformer的en-de attention上运用了Monotonic手法，实现同声传译需要的效果。给出了MMA-H和MMA-IL两种方案，前者适用于streaming的场景，后者更加准确。
