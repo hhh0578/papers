@@ -36,3 +36,35 @@ VQ-VAE模型活用了潜在空间，从源数据的大空间中提取出重要�
 
 本文我们通过离散潜在变量的新学习法来介绍VQ-VAE模型。后验概率和先验概率是多项式分布，而这些分布中得到的样本会索引一张嵌入表。这张嵌入表用于decoder网络的输入。
 ### 离散潜变量
+我们定义潜嵌入空间e&isin;R<sup>KxD</sup>，其中K是离散潜空间的大小，D是每个潜嵌入向量的维度e<sub>i</sub>。按图1，模型输入x，得到z<sub>e</sub>（x）。然后按照公式1，从共有的嵌入空间e中计算出最接近的离散潜变量z。decoder的输入对应公式2中的嵌入向量e<sub>k</sub>。这种前向计算可以视作将潜变量非线性映射到1-of-K 嵌入向量的常规自编码。这个模型的参数集是encoder、decoder和嵌入空间e的合集。为求方便，本节中我们用随机变量z来代表离散潜变量。在实际的演讲、图片、视频中我们分别提取1D、2D、3D潜特征空间。
+
+后验多项式分布q（z|x）按下述one-hot公式定义：  
+![Imgur](https://i.imgur.com/ZMddlYp.png)
+
+其中z（x）代表encoder网络的输出。我们将此模型视作VAE，可以将log p（x）和ELBO绑定。proposal distribution q（z = k | x）是确定性的，并且通过在z上定义一个简单的uniform先验，我们可以获得KL散度常数，等于log K。
+
+表达z（x）穿过discretisation bottleneck，按照公式1和2在最近的嵌入元素上映射。
+![Imgur](https://i.imgur.com/RwY7Lyu.png)
+
+![Imgur](https://i.imgur.com/2x1WSCH.png)
+### 学习
+注意公式2中没有实际梯度，但我们认为这里梯度和直接估计相似，将decoder输入zq（x）的梯度复制到encoder的输出ze（x）。当然可以通过量化计算subgradient，但是本文的实验直接复制依旧效果良好。
+
+在前向计算中，nearest embedding zq（x）传入decoder，然后再逆向传播中将梯度&nabla;zL直接送回encoder。既然encoder的输出和decoder的输入共享同样维度D的空间，这个梯度就保存了能调整encoder以降低重构损失的有用信息。
+
+看图1（右边），由于公式1会变化，梯度会让下一次前向传播的encoder输出发生变化。
+
+公式3定义了总损失函数。它由三个部分组成，分别训练VQ-VAE的不同部分。  
+第一个项是重构误差（或者说是数据项），优化encoder和decoder。由于梯度直接从ze（x）传到zq（x），嵌入ei不会从重构损失中得到梯度。因此，  
+第二项，为了训练嵌入空间，我们使用最简单的字典学习算法之一，Vector Quantisation。VQ目标利用L2误差调整嵌入向量ei趋近encoder输出ze（x）。由于这一项仅仅作用于更新字典，因此还可以根据ze（x）的移动平均值来更新字典项。详情见附录A1。
+
+最后，由于嵌入空间的体积是无量纲的，因此如果嵌入ei的训练速度不如encoder参数那么快，则可以任意增长。为了确保编码器进行嵌入并且其输出不会增长，我们添加了一个承诺损失，即等式3中的第三项。
+由此得到训练目标：  
+![Imgur](https://i.imgur.com/Hg5ya1t.png)
+
+其中sg代表stopgradient operator，这代表在前向计算的时候偏微分为0，即是个不更新的常量。decoder由第一项优化，encoder由第一项和第三项优化，embeddings从第二项进行优化。我们发现最终算法在&beta;上十分顽抗，在&beta;=0.1到2.0上并没有多大变化。在所有的实验中&beta;=0.25。由于我们假设z是uniform先验，因此通常在ELBO中出现的KL项相对于编码器参数是恒定的，因此在训练中可以忽略。
+
+我们的实验中定义N离散latents（在ImageNet是32x32，在CIFAR10是8x8x10）。损失L是相同的，只是会针对每个latent得到N terms上k-means和commitment loss的一个平均值。
+
+![Imgur](https://i.imgur.com/aqqleQu.png)
+
