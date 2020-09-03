@@ -21,6 +21,9 @@
 [2018 BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://github.com/hhh0578/papers/blob/master/%5BJacobDevlin%5DBERT.md)
 利用MLM方法，在无师数据上预训练transformer之后，仅需要微调模型即能适应大多数task。
 
+[2018 Neural Discrete Representation Learning](https://github.com/hhh0578/papers/blob/master/%5BAaronvandenOord%5DNeuralDiscreteRepresentationLearning.md)  
+VQ-VAE模型，编码器的结果在离散嵌入空间中采样，得到解码器的输入，然后利用三项目标函数分别对encoder参数，decoder参数和离散空间进行优化。
+
 [2019 OPTIMAL COMPLETION DISTILLATION FOR SEQUENCE LEARNING](https://github.com/hhh0578/papers/blob/master/%5BSaraSabour%5DOCD.md)
 因为目标函数在训练时只能从真实target预测下一个目标（MLE），和实际测试时候用生成target预测下一个目标的过程有偏差，于是在训练时也利用生成的target前缀预测下一个目标（OCD）。其中构造了一个Q-values，以导出能用以模仿学习的函数。
 
